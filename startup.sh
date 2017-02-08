@@ -9,5 +9,9 @@ apache2ctl start
 
 /bin/sh -c "/usr/sbin/ido2db -c /etc/icinga/ido2db.cfg"
 
-/usr/sbin/icinga /etc/icinga/icinga.cfg
+/usr/sbin/icinga -d /etc/icinga/icinga.cfg
+
+tail -f /var/log/icinga/icinga.log
+
+killall icinga
 
