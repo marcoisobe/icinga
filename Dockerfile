@@ -22,7 +22,7 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu/ wily multiverse" >> /etc/apt/sou
 
 # Minor changes and install MIBs
 RUN chmod g+xs /var/lib/icinga/rw \
- && chmod u+x /usr/lib/nagios/plugins/check_dhcp \
+ && chmod u+s /usr/lib/nagios/plugins/check_dhcp \
  && cp /usr/share/doc/snmp-mibs-downloader/examples/cisco* /etc/snmp-mibs-downloader/ \
  && cd /etc/snmp-mibs-downloader && gzip -d ciscolist.gz \
  && sed -i -e '/CISCO-802-TAP-MIB/d;/CISCO-IP-TAP-CAPABILITY/d;/CISCO-IP-TAP-MIB/d;/CISCO-SYS-INFO-LOG-MIB/d;/CISCO-TAP2-CAPABILITY/d;/CISCO-TAP2-MIB/d;/CISCO-TAP-MIB/d;/CISCO-USER-CONNECTION-TAP-MIB/d' /etc/snmp-mibs-downloader/ciscolist \
