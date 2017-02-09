@@ -10,7 +10,7 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu/ wily multiverse" >> /etc/apt/sou
  && sed -i -e 's/^deb-src.*/#&/' /etc/apt/sources.list \
  && apt-get update \
  && apt-get install -y --no-install-recommends apt-utils vim unzip curl patch gzip \
- && apt-get install -y --no-install-recommends mysql-server php5 php5-cli php5-mysql php5-ssh2 php5-curl apache2 mysql-client snmp-mibs-downloader \
+ && apt-get install -y --no-install-recommends mysql-server php5 php5-cli php5-mysql php5-ssh2 php5-curl apache2 mysql-client snmp-mibs-downloader freeipmi \
  && php5enmod -s ALL ssh2 curl \
  && /usr/bin/mysql_install_db --user=mysql --ldata=/var/lib/mysql \
  && /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
