@@ -4,27 +4,40 @@ FROM ubuntu:wily
 ENV DEBIAN_FRONTEND noninteractive 
 
 # Basic installs
-RUN apt-get update \
- && apt-get install -y --no-install-recommends apt-utils vim unzip curl patch \
- && apt-get install -y --no-install-recommends mysql-server php5 php5-cli php5-mysql php5-ssh2 php5-curl apache2 mysql-client \
+RUN echo "deb http://archive.ubuntu.com/ubuntu/ wily multiverse" >> /etc/apt/sources.list \
+ && echo "deb http://archive.ubuntu.com/ubuntu/ wily-updates multiverse" >> /etc/apt/sources.list \
+ && echo "deb http://archive.ubuntu.com/ubuntu/ wily-security multiverse" >> /etc/apt/sources.list \
+ && sed -i -e 's/^deb-src.*/#&/' /etc/apt/sources.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends apt-utils vim unzip curl patch gzip \
+ && apt-get install -y --no-install-recommends mysql-server php5 php5-cli php5-mysql php5-ssh2 php5-curl apache2 mysql-client snmp-mibs-downloader \
  && php5enmod -s ALL ssh2 curl \
  && /usr/bin/mysql_install_db --user=mysql --ldata=/var/lib/mysql \
  && /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
  && sleep 5 \
- && apt-get install -y --no-install-recommends icinga icinga-idoutils icinga-doc nagios-plugins nagios-images \
+ && apt-get install -y --no-install-recommends icinga icinga-idoutils icinga-doc nagios-plugins nagios-images nagios-snmp-plugins nagios-plugins-contrib snmp\
  && apt-get install -y --no-install-recommends icinga-web icinga-web-config-icinga icinga-web-pnp \
  && apt-get install -y --no-install-recommends pnp4nagios pnp4nagios-web-config-icinga pnp4nagios-web \
- && killall mysqld \
- && chmod g+xs /var/lib/icinga/rw \
+ && killall mysqld
+
+# Minor changes and install MIBs
+RUN chmod g+xs /var/lib/icinga/rw \
+ && chmod u+x /usr/lib/nagios/plugins/check_dhcp \
+ && cp /usr/share/doc/snmp-mibs-downloader/examples/cisco* /etc/snmp-mibs-downloader/ \
+ && cd /etc/snmp-mibs-downloader && gzip -d ciscolist.gz \
+ && sed -i -e '/CISCO-802-TAP-MIB/d;/CISCO-IP-TAP-CAPABILITY/d;/CISCO-IP-TAP-MIB/d;/CISCO-SYS-INFO-LOG-MIB/d;/CISCO-TAP2-CAPABILITY/d;/CISCO-TAP2-MIB/d;/CISCO-TAP-MIB/d;/CISCO-USER-CONNECTION-TAP-MIB/d' /etc/snmp-mibs-downloader/ciscolist \
+ && sed -i -e '/^AUTOLOAD=.*/ s/iana"/iana cisco"/' /etc/snmp-mibs-downloader/snmp-mibs-downloader.conf \
+ && echo "ARCHDIR=auto/mibs/v2" >> /etc/snmp-mibs-downloader/cisco.conf \
+ && download-mibs \
  && apt-get clean
 
 # Setup idoutils and icinga-web
 RUN htpasswd -bc /etc/icinga/htpasswd.users root password \
- && sed -ie '/ssh/,/}/s/members *localhost/#&/' /etc/icinga/objects/hostgroups_icinga.cfg \
+ && sed -i -e '/ssh/,/}/s/members *localhost/#&/' /etc/icinga/objects/hostgroups_icinga.cfg \
  && usermod -a -G nagios www-data \
- && sed -ie 's/IDO2DB=no/IDO2DB=yes/' /etc/default/icinga \
- && sed -ie 's/check_external_commands=0/check_external_commands=1/' /etc/icinga/icinga.cfg \
- && sed -ie 's/icingaadmin/root/' /etc/icinga/cgi.cfg \
+ && sed -i -e 's/IDO2DB=no/IDO2DB=yes/' /etc/default/icinga \
+ && sed -i -e 's/check_external_commands=0/check_external_commands=1/' /etc/icinga/icinga.cfg \
+ && sed -i -e 's/icingaadmin/root/' /etc/icinga/cgi.cfg \
  && cp /usr/share/doc/icinga-idoutils/examples/idoutils.cfg-sample /etc/icinga/modules/idoutils.cfg
 
 # Install nagiosql
@@ -41,7 +54,7 @@ RUN curl -kL -o tmp.zip https://sourceforge.net/projects/nagiosql/files/nagiosql
  && cp -r /tmp/NagiosQL_3.2.0_SP2/* /var/www/html/nagiosql32/ \
  && rm -rf /tmp/NagiosQL_3.2.0_SP1 /tmp/NagiosQL_3.2.0_SP2 \
  && chown -R www-data:www-data /var/www/html/nagiosql32 \
- && sed -ie "s/^;date.timezone =$/date.timezone = \"Etc\/GMT\"/" /etc/php5/apache2/php.ini
+ && sed -i -e "s/^;date.timezone =$/date.timezone = \"Etc\/GMT\"/" /etc/php5/apache2/php.ini
 
 # Setup nagiosql
 COPY import.sql /tmp/
@@ -93,9 +106,9 @@ RUN /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
  && chown -R www-data:www-data /etc/nagiosql \
  && chmod -R g+rs /etc/nagiosql \
  && chmod u+s /usr/sbin/icinga \
- && sed -ie "s/^cfg_file=\/etc\/icinga\/commands.cfg/#&/" /etc/icinga/icinga.cfg \
- && sed -ie "s/^cfg_dir=\/etc\/nagios-plugins\/config/#&/" /etc/icinga/icinga.cfg \
- && sed -ie "s/^cfg_dir=\/etc\/icinga\/objects/cfg_dir=\/etc\/nagiosql/" /etc/icinga/icinga.cfg \
+ && sed -i -e "s/^cfg_file=\/etc\/icinga\/commands.cfg/#&/" /etc/icinga/icinga.cfg \
+ && sed -i -e "s/^cfg_dir=\/etc\/nagios-plugins\/config/#&/" /etc/icinga/icinga.cfg \
+ && sed -i -e "s/^cfg_dir=\/etc\/icinga\/objects/cfg_dir=\/etc\/nagiosql/" /etc/icinga/icinga.cfg \
  && rm -rf /var/www/html/nagiosql32/install
 
 ADD settings.php /var/www/html/nagiosql32/config/settings.php
