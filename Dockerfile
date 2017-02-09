@@ -67,13 +67,12 @@ RUN curl -kL -o tmp.zip https://sourceforge.net/projects/nagiosql/files/nagiosql
 COPY import.sql /tmp/
 COPY nagiosql /etc/nagiosql
 RUN /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
- && sleep 5 \
- && echo "CREATE DATABASE IF NOT EXISTS db_nagiosql_v32;" | mysql -u root \
- && echo "GRANT ALL on db_nagiosql_v32.* TO nagiosql_user@localhost IDENTIFIED BY 'nagiosql_pass';" | mysql -u root \
+ && sleep 15 \
+ && mysql -uroot -e "CREATE DATABASE IF NOT EXISTS db_nagiosql_v32; GRANT ALL ON db_nagiosql_v32.* TO nagiosql_user@localhost IDENTIFIED BY 'nagiosql_pass';" \
  && mysql -uroot db_nagiosql_v32 < /var/www/html/nagiosql32/install/sql/nagiosQL_v32_db_mysql.sql \
  && mysql -uroot db_nagiosql_v32 < /tmp/import.sql \
- && echo "INSERT INTO tbl_user VALUES (1,'root','Administrator',MD5('password'),'1','0','1','1','1',1,'0000-00-00 00:00:00',NOW());" | mysql -uroot db_nagiosql_v32 \
- && echo "INSERT INTO tbl_settings VALUES \
+ && echo mysql -uroot db_nagiosql_v32 -e "INSERT INTO tbl_user VALUES (1,'root','Administrator',MD5('password'),'1','0','1','1','1',1,'0000-00-00 00:00:00',NOW());" \
+ && mysql -uroot db_nagiosql_v32 -e "INSERT INTO tbl_settings VALUES \
          (1,'db','version','3.2.0'), \
          (2,'db','type','mysql'), \
          (3,'path','protocol','http'), \
@@ -92,8 +91,8 @@ RUN /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
          (16,'network','proxyserver',''), \
          (17,'network','proxyuser',''), \
          (18,'network','proxypasswd',''), \
-         (19,'network','onlineupdate','0');" | mysql -uroot db_nagiosql_v32 \
- && echo "UPDATE tbl_configtarget SET \
+         (19,'network','onlineupdate','0');" \
+ && mysql -uroot db_nagiosql_v32 -e "UPDATE tbl_configtarget SET \
          basedir='/etc/nagiosql/', \
          hostconfig='/etc/nagiosql/objects/', \
          serviceconfig='/etc/nagiosql/objects/', \
@@ -107,7 +106,7 @@ RUN /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
          binaryfile='/usr/sbin/icinga', \
          pidfile='/var/run/icinga/icinga.pid', \
          conffile='/etc/icinga/icinga.cfg', \
-         last_modified=NOW() WHERE id=1;" | mysql -uroot db_nagiosql_v32 \
+         last_modified=NOW() WHERE id=1;" \
  && killall mysqld \
  && mkdir -p /etc/nagiosql/objects /etc/nagiosql/backup \
  && chown -R www-data:www-data /etc/nagiosql \
