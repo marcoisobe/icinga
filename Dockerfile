@@ -9,8 +9,8 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu/ wily multiverse" >> /etc/apt/sou
  && echo "deb http://archive.ubuntu.com/ubuntu/ wily-security multiverse" >> /etc/apt/sources.list \
  && sed -i -e 's/^deb-src.*/#&/' /etc/apt/sources.list \
  && apt-get update \
- && apt-get install -y --no-install-recommends apt-utils vim unzip curl patch gzip pwgen \
- && apt-get install -y --no-install-recommends mysql-server php5 php5-cli php5-mysql php5-ssh2 php5-curl apache2 mysql-client snmp-mibs-downloader freeipmi \
+ && apt-get install -y --no-install-recommends apt-utils vim unzip curl patch gzip pwgen python \
+ && apt-get install -y --no-install-recommends mysql-server php5 php5-cli php5-mysql php5-ssh2 php5-curl apache2 mysql-client snmp-mibs-downloader freeipmi libipc-run-perl \
  && php5enmod -s ALL ssh2 curl \
  && /usr/bin/mysql_install_db --user=mysql --ldata=/var/lib/mysql \
  && /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
@@ -35,7 +35,7 @@ RUN chmod g+xs /var/lib/icinga/rw \
  && mkdir -p /usr/share/snmp/mibs/PC6200 \
  && unzip -d /usr/share/snmp/mibs/PC6200/ `ls *MIBs.zip` \
  && rm -f *MIBs.zip \
- && sed -i -e '/^mibs :$/i mibdirs +/usr/share/snmp/mibs/PC6200\nmibdirs +/usr/share/snmp/mibs/cisco' /etc/snmp/snmp.conf \
+ && sed -i -e '/^mibs :$/i mibdirs +/usr/share/snmp/mibs/PC6200\nmibdirs +/var/lib/mibs/cisco' /etc/snmp/snmp.conf \
  && apt-get clean
 
 # Setup idoutils and icinga-web
@@ -119,7 +119,11 @@ RUN /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
 
 ADD settings.php /var/www/html/nagiosql32/config/settings.php
 
-RUN chown www-data:www-data /var/www/html/nagiosql32/config/settings.php
+RUN chown www-data:www-data /var/www/html/nagiosql32/config/settings.php \
+ && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=5964&cf_id=24' -o /usr/lib/nagios/plugins/check_liebert.py \
+ && chmod 0755 /usr/lib/nagios/plugins/check_liebert.py \
+ && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=4136&cf_id=24' -o /usr/lib/nagios/plugins/check_apc.pl \
+ && chmod 0755 /usr/lib/nagios/plugins/check_apc.pl
 
 ADD startup.sh /usr/sbin/startup.sh
 CMD startup.sh
