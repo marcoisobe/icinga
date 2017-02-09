@@ -29,6 +29,13 @@ RUN chmod g+xs /var/lib/icinga/rw \
  && sed -i -e '/^AUTOLOAD=.*/ s/iana"/iana cisco"/' /etc/snmp-mibs-downloader/snmp-mibs-downloader.conf \
  && echo "ARCHDIR=auto/mibs/v2" >> /etc/snmp-mibs-downloader/cisco.conf \
  && download-mibs \
+ && curl -kL https://downloads.dell.com/FOLDER03857069M/1/PC6200v3.3.15.1a40.zip -o tmp.zip \
+ && unzip -j tmp.zip '*MIBs.zip' \
+ && rm -f tmp.zip \
+ && mkdir -p /usr/share/snmp/mibs/PC6200 \
+ && unzip -d /usr/share/snmp/mibs/PC6200/ `ls *MIBs.zip` \
+ && rm -f *MIBs.zip \
+ && sed -i -e '/^mibs :$/i mibdirs +/usr/share/snmp/mibs/PC6200\nmibdirs +/usr/share/snmp/mibs/cisco' /etc/snmp/snmp.conf \
  && apt-get clean
 
 # Setup idoutils and icinga-web
