@@ -9,8 +9,11 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu/ wily multiverse" >> /etc/apt/sou
  && echo "deb http://archive.ubuntu.com/ubuntu/ wily-security multiverse" >> /etc/apt/sources.list \
  && sed -i -e 's/^deb-src.*/#&/' /etc/apt/sources.list \
  && apt-get update \
- && apt-get install -y --no-install-recommends apt-utils vim unzip curl patch gzip pwgen python \
- && apt-get install -y --no-install-recommends mysql-server php5 php5-cli php5-mysql php5-ssh2 php5-curl apache2 mysql-client snmp-mibs-downloader freeipmi libipc-run-perl libswitch-perl \
+ && apt-get install -y --no-install-recommends apt-utils vim unzip curl patch gzip pwgen python dnsutils build-essential \
+                                               autoconf \
+ && apt-get install -y --no-install-recommends mysql-server php5 php5-cli php5-mysql php5-ssh2 php5-curl apache2 \
+                                               mysql-client snmp-mibs-downloader freeipmi libipc-run-perl libswitch-perl \
+                                               libnumber-format-perl libconfig-inifiles-perl libdatetime-perl \
  && php5enmod -s ALL ssh2 curl \
  && /usr/bin/mysql_install_db --user=mysql --ldata=/var/lib/mysql \
  && /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
@@ -119,11 +122,22 @@ RUN /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
 
 ADD settings.php /var/www/html/nagiosql32/config/settings.php
 
+RUN  mkdir -p tmp \
+ && curl -L 'http://edcint.co.nz/checkwmiplus/wmi-1.3.14.tar.gz' | tar -xz -C tmp -f - \
+ && cd tmp/wmi-1.3.14 && sed -i -e '583d' Samba/source/pidl/pidl \
+ && ulimit -n 8192 && make "CPP=gcc -E -ffreestanding" \
+ && cd ../.. && rm -rf tmp
+
 RUN chown www-data:www-data /var/www/html/nagiosql32/config/settings.php \
  && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=5964&cf_id=24' -o /usr/lib/nagios/plugins/check_liebert.py \
  && chmod 0755 /usr/lib/nagios/plugins/check_liebert.py \
  && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=4136&cf_id=24' -o /usr/lib/nagios/plugins/check_apc.pl \
- && chmod 0755 /usr/lib/nagios/plugins/check_apc.pl
+ && chmod 0755 /usr/lib/nagios/plugins/check_apc.pl \
+ && curl -L 'http://edcint.co.nz/checkwmiplus/sites/default/files/check_wmi_plus.v1.62.tar.gz' | tar -xz -C /usr/lib/nagios/plugins -f - \
+ && mv /usr/lib/nagios/plugins/etc/check_wmi_plus /etc/ \
+ && mv /etc/check_wmi_plus/check_wmi_plus.conf.sample /etc/check_wmi_plus/check_wmi_plus.conf \
+ && sed -i -e '/^\$base_dir=.*/ s/=.*/="\/usr\/lib\/nagios\/plugins"/; /^\$wmic_command=.*/ s/=.*/="\/bin\/wmic"/' /etc/check_wmi_plus/check_wmi_plus.conf \
+ && rmdir /usr/lib/nagios/plugins/etc
 
 ADD startup.sh /usr/sbin/startup.sh
 CMD startup.sh
