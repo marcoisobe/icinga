@@ -15,6 +15,7 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu/ wily multiverse" >> /etc/apt/sou
                                                mysql-client snmp-mibs-downloader freeipmi libipc-run-perl libswitch-perl \
                                                libnumber-format-perl libconfig-inifiles-perl libdatetime-perl \
  && php5enmod -s ALL ssh2 curl \
+ && mkdir -p /var/www/mrtg \
  && /usr/bin/mysql_install_db --user=mysql --ldata=/var/lib/mysql \
  && /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
  && sleep 5 \
