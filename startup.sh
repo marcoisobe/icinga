@@ -21,6 +21,7 @@ sed -i -e "s/db_pass=.*/db_pass=${IDO_PASSWORD}/" /etc/icinga/ido2db.cfg
 mysql -e "SET PASSWORD FOR 'nagiosql_user'@'localhost' = PASSWORD('${NAGIOSQL_PASSWORD}')"
 sed -i -e "s/password *= .*/password     = ${NAGIOSQL_PASSWORD}/" /var/www/html/nagiosql32/config/settings.php
 
+cron
 apache2ctl start
 
 /bin/sh -c "/usr/sbin/ido2db -c /etc/icinga/ido2db.cfg"
