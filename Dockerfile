@@ -122,11 +122,10 @@ RUN /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
 
 ADD settings.php /var/www/html/nagiosql32/config/settings.php
 
-RUN  mkdir -p tmp \
- && curl -L 'http://edcint.co.nz/checkwmiplus/wmi-1.3.14.tar.gz' | tar -xz -C tmp -f - \
+RUN curl -L 'http://edcint.co.nz/checkwmiplus/wmi-1.3.14.tar.gz' | tar -xz -C tmp -f - \
  && cd tmp/wmi-1.3.14 && sed -i -e '583d' Samba/source/pidl/pidl \
  && ulimit -n 8192 && make "CPP=gcc -E -ffreestanding" \
- && cd ../.. && rm -rf tmp
+ && cd ../.. && rm -rf tmp/wmi-1.3.14
 
 RUN chown www-data:www-data /var/www/html/nagiosql32/config/settings.php \
  && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=5964&cf_id=24' -o /usr/lib/nagios/plugins/check_liebert.py \
