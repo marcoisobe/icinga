@@ -131,7 +131,7 @@ RUN curl -L 'http://edcint.co.nz/checkwmiplus/wmi-1.3.14.tar.gz' | tar -xz -C tm
 RUN chown www-data:www-data /var/www/html/nagiosql32/config/settings.php \
  && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=3928&cf_id=24' -o /usr/lib/nagios/plugins/check_mrtgtraf.pl \
  && chmod 0755 /usr/lib/nagios/plugins/check_mrtgtraf.pl \
- && sed -i -e '/^use lib .*/ s/".*"/"\/usr\/lib\/nagios\/plugins\/utils.pm"/' /usr/lib/nagios/plugins/check_mrtgtraf.pl \
+ && sed -i -e '/^use lib .*/ s/".*"/"\/usr\/lib\/nagios\/plugins"/' /usr/lib/nagios/plugins/check_mrtgtraf.pl \
  && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=464&cf_id=24' -o /usr/lib/nagios/plugins/check_all_interfaces.pl \
  && chmod 0755 /usr/lib/nagios/plugins/check_all_interfaces.pl \
  && mkdir -p /var/cache/nagios/iferrors && chown nagios:nagios /var/cache/nagios/iferrors \
