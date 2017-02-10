@@ -28,7 +28,7 @@ RUN chmod g+xs /var/lib/icinga/rw \
  && chmod u+s /usr/lib/nagios/plugins/check_dhcp \
  && cp /usr/share/doc/snmp-mibs-downloader/examples/cisco* /etc/snmp-mibs-downloader/ \
  && cd /etc/snmp-mibs-downloader && gzip -d ciscolist.gz \
- && sed -i -e '/CISCO-802-TAP-MIB/d;/CISCO-IP-TAP-CAPABILITY/d;/CISCO-IP-TAP-MIB/d;/CISCO-SYS-INFO-LOG-MIB/d;/CISCO-TAP2-CAPABILITY/d;/CISCO-TAP2-MIB/d;/CISCO-TAP-MIB/d;/CISCO-USER-CONNECTION-TAP-MIB/d' /etc/snmp-mibs-downloader/ciscolist \
+ && sed -i -e '/CISCO-802-TAP-MIB/d;/CISCO-IP-TAP-CAPABILITY/d;/CISCO-IP-TAP-MIB/d;/CISCO-SYS-INFO-LOG-MIB/d;/CISCO-TAP2-CAPABILITY/d;/CISCO-TAP2-MIB/d;/CISCO-TAP-MIB/d;/CISCO-USER-CONNECTION-TAP-MIB/d;/CISCO-IP-CAPABILITY/d' /etc/snmp-mibs-downloader/ciscolist \
  && sed -i -e '/^AUTOLOAD=.*/ s/iana"/iana cisco"/' /etc/snmp-mibs-downloader/snmp-mibs-downloader.conf \
  && echo "ARCHDIR=auto/mibs/v2" >> /etc/snmp-mibs-downloader/cisco.conf \
  && download-mibs \
@@ -135,7 +135,7 @@ RUN chown www-data:www-data /var/www/html/nagiosql32/config/settings.php \
  && curl -L 'http://edcint.co.nz/checkwmiplus/sites/default/files/check_wmi_plus.v1.62.tar.gz' | tar -xz -C /usr/lib/nagios/plugins -f - \
  && mv /usr/lib/nagios/plugins/etc/check_wmi_plus /etc/ \
  && mv /etc/check_wmi_plus/check_wmi_plus.conf.sample /etc/check_wmi_plus/check_wmi_plus.conf \
- && sed -i -e '/^\$base_dir=.*/ s/=.*/="\/usr\/lib\/nagios\/plugins"/; /^\$wmic_command=.*/ s/=.*/="\/bin\/wmic"/' /etc/check_wmi_plus/check_wmi_plus.conf \
+ && sed -i -e '/^\$base_dir=.*/ s/=.*/="\/usr\/lib\/nagios\/plugins"\;/; /^\$wmic_command=.*/ s/=.*/="\/bin\/wmic"\;/' /etc/check_wmi_plus/check_wmi_plus.conf \
  && rmdir /usr/lib/nagios/plugins/etc
 
 ADD startup.sh /usr/sbin/startup.sh
