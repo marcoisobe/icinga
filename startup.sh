@@ -5,6 +5,12 @@ export ICINGAWEB_PASSWORD=${ICINGAWEB_PASSWORD:-$(pwgen -s 12 1)}
 export IDO_PASSWORD=${IDO_PASSWORD:-$(pwgen -s 12 1)}
 export NAGIOSQL_PASSWORD=${NAGIOSQL_PASSWORD:-$(pwgen -s 12 1)}
 
+if [ -f /opt/pre_startup.sh ]; then
+    chmod u+x /opt/pre_startup.sh
+    echo "Found pre_startup.sh, executing it"
+    /opt/pre_startup.sh
+fi
+
 /bin/sh -c "/usr/bin/mysqld_safe > /dev/null 2>&1 &"
 
 sleep 15
@@ -27,6 +33,12 @@ apache2ctl start
 /bin/sh -c "/usr/sbin/ido2db -c /etc/icinga/ido2db.cfg"
 
 /usr/sbin/icinga -d /etc/icinga/icinga.cfg
+
+if [ -f /opt/post_startup.sh ]; then
+    chmod u+x /opt/post_startup.sh
+    echo "Found post_startup.sh, executing it"
+    /opt/post_startup.sh
+fi
 
 tail -f /var/log/icinga/icinga.log
 
