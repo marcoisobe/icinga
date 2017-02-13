@@ -41,6 +41,8 @@ RUN chmod g+xs /var/lib/icinga/rw \
  && rm -f *MIBs.zip \
  && sed -i -e '/^mibs :$/i mibdirs +/usr/share/snmp/mibs/PC6200\nmibdirs +/var/lib/mibs/cisco' /etc/snmp/snmp.conf \
  && sed -i -e '/^process_performance_data=/ s/0/1/' /etc/icinga/icinga.cfg \
+ && sed -i -e '/^#host_perfdata_command=/ {s/#//; s/=.*/=process-host-perfdata/}' /etc/icinga/icinga.cfg \
+ && sed -i -e '/^#service_perfdata_command=/ {s/#//; s/=.*/=process-service-perfdata/}' /etc/icinga/icinga.cfg \
  && apt-get clean
 
 # Setup idoutils and icinga-web
@@ -76,7 +78,7 @@ RUN /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
  && mysql -uroot -e "CREATE DATABASE IF NOT EXISTS db_nagiosql_v32; GRANT ALL ON db_nagiosql_v32.* TO nagiosql_user@localhost IDENTIFIED BY 'nagiosql_pass';" \
  && mysql -uroot db_nagiosql_v32 < /var/www/html/nagiosql32/install/sql/nagiosQL_v32_db_mysql.sql \
  && mysql -uroot db_nagiosql_v32 < /tmp/import.sql \
- && echo mysql -uroot db_nagiosql_v32 -e "INSERT INTO tbl_user VALUES (1,'root','Administrator',MD5('password'),'1','0','1','1','1',1,'0000-00-00 00:00:00',NOW());" \
+ && mysql -uroot db_nagiosql_v32 -e "INSERT INTO tbl_user VALUES (1,'root','Administrator',MD5('password'),'1','0','1','1','1',1,'0000-00-00 00:00:00',NOW());" \
  && mysql -uroot db_nagiosql_v32 -e "INSERT INTO tbl_settings VALUES \
          (1,'db','version','3.2.0'), \
          (2,'db','type','mysql'), \
