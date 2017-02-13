@@ -40,6 +40,7 @@ RUN chmod g+xs /var/lib/icinga/rw \
  && unzip -d /usr/share/snmp/mibs/PC6200/ `ls *MIBs.zip` \
  && rm -f *MIBs.zip \
  && sed -i -e '/^mibs :$/i mibdirs +/usr/share/snmp/mibs/PC6200\nmibdirs +/var/lib/mibs/cisco' /etc/snmp/snmp.conf \
+ && sed -i -e '/^process_performance_data=/ s/0/1/' /etc/icinga/icinga.cfg \
  && apt-get clean
 
 # Setup idoutils and icinga-web
@@ -135,7 +136,6 @@ RUN chown www-data:www-data /var/www/html/nagiosql32/config/settings.php \
  && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=464&cf_id=24' -o /usr/lib/nagios/plugins/check_all_interfaces.pl \
  && chmod 0755 /usr/lib/nagios/plugins/check_all_interfaces.pl \
  && mkdir -p /var/cache/nagios/iferrors && chown nagios:nagios /var/cache/nagios/iferrors \
- && sed -i -e '/^enable_embedded_perl=/ s/1/0/' /etc/icinga/icinga.cfg \
  && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=5964&cf_id=24' -o /usr/lib/nagios/plugins/check_liebert.py \
  && chmod 0755 /usr/lib/nagios/plugins/check_liebert.py \
  && curl -kL 'https://exchange.nagios.org/components/com_mtree/attachment.php?link_id=4136&cf_id=24' -o /usr/lib/nagios/plugins/check_apc.pl \
