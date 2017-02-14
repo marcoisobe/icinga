@@ -15,15 +15,18 @@ fi
 
 sleep 15
 
+echo "Setting icinga_web password to ${ICINGAWEB_PASSWORD}"
 mysql -e "SET PASSWORD FOR 'icinga_web'@'localhost' = PASSWORD('${ICINGAWEB_PASSWORD}')"
 sed -i -e "s/dbc_dbpass='.*'/dbc_dbpass='${ICINGAWEB_PASSWORD}'/" /etc/dbconfig-common/icinga-web.conf
 sed -i -e "s/mysql:\/\/icinga_web:.*@localhost/mysql:\/\/icinga_web:${ICINGAWEB_PASSWORD}@localhost/" /etc/icinga-web/conf.d/database-web.xml
 
+echo "Setting icinga-idoutils password to ${IDO_PASSWORD}"
 mysql -e "SET PASSWORD FOR 'icinga-idoutils'@'localhost' = PASSWORD('${IDO_PASSWORD}')"
 sed -i -e "s/dbc_dbpass='.*'/dbc_dbpass='${IDO_PASSWORD}'/" /etc/dbconfig-common/icinga-idoutils.conf
 sed -i -e "s/mysql:\/\/icinga-idoutils:.*@localhost/mysql:\/\/icinga-idoutils:${IDO_PASSWORD}@localhost/" /etc/icinga-web/conf.d/database-ido.xml
 sed -i -e "s/db_pass=.*/db_pass=${IDO_PASSWORD}/" /etc/icinga/ido2db.cfg
 
+echo "Setting nagiosql_user password to ${NAGIOSQL_PASSWORD}"
 mysql -e "SET PASSWORD FOR 'nagiosql_user'@'localhost' = PASSWORD('${NAGIOSQL_PASSWORD}')"
 sed -i -e "s/password *= .*/password     = ${NAGIOSQL_PASSWORD}/" /var/www/html/nagiosql32/config/settings.php
 
