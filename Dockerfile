@@ -14,8 +14,8 @@ RUN apt-get update \
 # PHP PPA for PHP5.6
 RUN LC_ALL=en_US.UTF-8 add-apt-repository ppa:ondrej/php \
  && apt-get update \
- && apt-get install -y --no-install-recommends php5.6 php5.6-cli php5.6-mysql php5.6-ssh2 php5.6-curl php5.6-xml php5.6-xsl \
- && phpenmod -s ALL mysql ssh2 curl xml xsl \
+ && apt-get install -y --no-install-recommends php5.6 php5.6-cli php5.6-mysql php5.6-ssh2 php5.6-curl php5.6-xml php5.6-xsl php5.6-gd \
+ && phpenmod -s ALL mysql ssh2 curl xml xsl gd \
 
 RUN mkdir -p /var/www/mrtg \
  && mkdir -p /var/run/mysqld && chown mysql:mysql /var/run/mysqld \
