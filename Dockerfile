@@ -1,27 +1,29 @@
 # Dockerfile for icinga
-FROM ubuntu:wily
+FROM ubuntu:yakkety
 
 ENV DEBIAN_FRONTEND noninteractive 
 
-# Basic installs
-RUN echo "deb http://archive.ubuntu.com/ubuntu/ wily multiverse" >> /etc/apt/sources.list \
- && echo "deb http://archive.ubuntu.com/ubuntu/ wily-updates multiverse" >> /etc/apt/sources.list \
- && echo "deb http://archive.ubuntu.com/ubuntu/ wily-security multiverse" >> /etc/apt/sources.list \
- && sed -i -e 's/^deb-src.*/#&/' /etc/apt/sources.list \
- && apt-get update \
+# Basic stuff
+RUN apt-get update \
  && apt-get install -y --no-install-recommends apt-utils vim unzip curl patch gzip pwgen python dnsutils build-essential \
-                                               autoconf mrtg cron python-openwsman \
- && apt-get install -y --no-install-recommends mysql-server php5 php5-cli php5-mysql php5-ssh2 php5-curl apache2 \
-                                               mysql-client snmp-mibs-downloader freeipmi libipc-run-perl libswitch-perl \
-                                               libnumber-format-perl libconfig-inifiles-perl libdatetime-perl \
- && php5enmod -s ALL ssh2 curl \
- && mkdir -p /var/www/mrtg \
- && /usr/bin/mysql_install_db --user=mysql --ldata=/var/lib/mysql \
+                                               autoconf mrtg cron python-openwsman software-properties-common language-pack-en-base rrdtool \
+# Apache, Perl & MySQL
+ && apt-get install -y --no-install-recommends mysql-server apache2 mysql-client snmp-mibs-downloader freeipmi libipc-run-perl libswitch-perl \
+                                               libnumber-format-perl libconfig-inifiles-perl libdatetime-perl libcgi-pm-perl librrds-perl
+
+# PHP PPA for PHP5.6
+RUN LC_ALL=en_US.UTF-8 add-apt-repository ppa:ondrej/php \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends php5.6 php5.6-cli php5.6-mysql php5.6-ssh2 php5.6-curl php5.6-xml php5.6-xsl \
+ && phpenmod -s ALL mysql ssh2 curl xml xsl \
+
+RUN mkdir -p /var/www/mrtg \
+ && mkdir -p /var/run/mysqld && chown mysql:mysql /var/run/mysqld \
+ && echo "[mysqld]\nsql_mode=ONLY_FULL_GROUP_BY,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" > /etc/mysql/conf.d/disable_strict_mode.cnf \
  && /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
- && sleep 5 \
+ && sleep 15 \
  && apt-get install -y --no-install-recommends icinga icinga-idoutils icinga-doc nagios-plugins nagios-images nagios-snmp-plugins nagios-plugins-contrib snmp\
  && apt-get install -y --no-install-recommends icinga-web icinga-web-config-icinga icinga-web-pnp \
- && apt-get install -y --no-install-recommends pnp4nagios pnp4nagios-web-config-icinga pnp4nagios-web \
  && killall mysqld
 
 # Minor changes and install MIBs
@@ -68,7 +70,7 @@ RUN curl -kL -o tmp.zip https://sourceforge.net/projects/nagiosql/files/nagiosql
  && cp -r /tmp/NagiosQL_3.2.0_SP2/* /var/www/html/nagiosql32/ \
  && rm -rf /tmp/NagiosQL_3.2.0_SP1 /tmp/NagiosQL_3.2.0_SP2 \
  && chown -R www-data:www-data /var/www/html/nagiosql32 \
- && sed -i -e "s/^;date.timezone =$/date.timezone = \"Etc\/GMT\"/" /etc/php5/apache2/php.ini
+ && sed -i -e "s/^;date.timezone =$/date.timezone = \"Etc\/GMT\"/" /etc/php/5.6/apache2/php.ini
 
 # Setup nagiosql
 COPY import.sql /tmp/
@@ -147,6 +149,17 @@ RUN chown www-data:www-data /var/www/html/nagiosql32/config/settings.php \
  && mv /etc/check_wmi_plus/check_wmi_plus.conf.sample /etc/check_wmi_plus/check_wmi_plus.conf \
  && sed -i -e '/^\$base_dir=.*/ s/=.*/="\/usr\/lib\/nagios\/plugins"\;/; /^\$wmic_command=.*/ s/=.*/="\/bin\/wmic"\;/' /etc/check_wmi_plus/check_wmi_plus.conf \
  && rmdir /usr/lib/nagios/plugins/etc
+
+# Install PNP4Nagios
+RUN curl -kL https://downloads.sourceforge.net/project/pnp4nagios/PNP-0.6/pnp4nagios-0.6.25.tar.gz | tar -xz -C tmp/ -f - \
+ && cd tmp/pnp4nagios-0.6.25 \
+ && ./configure --with-layout=debian --mandir=/usr/share/man --infodir=/usr/share/info --with-httpd-conf=/etc/apache2/conf-available \
+ && make all && make fullinstall \
+ && cd ../.. && rm -rf tmp/pnp4nagios-0.6.25 \
+ && sed -i -e '/AuthName/ s/".*"/"Icinga Access"/' /etc/apache2/conf-available/pnp4nagios.conf \
+ && sed -i -e '/AuthUserFile/ s/\/.*/\/etc\/icinga\/htpasswd.users/' /etc/apache2/conf-available/pnp4nagios.conf \
+ && rm -f /usr/share/pnp4nagios/html/install.php \
+ && a2enconf pnp4nagios
 
 ADD startup.sh /usr/sbin/startup.sh
 CMD startup.sh
