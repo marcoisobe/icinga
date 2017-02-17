@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euf -o pipefail
 
 export ICINGAWEB_PASSWORD=${ICINGAWEB_PASSWORD:-$(pwgen -s 12 1)}
 export IDO_PASSWORD=${IDO_PASSWORD:-$(pwgen -s 12 1)}
