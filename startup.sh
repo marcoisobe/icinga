@@ -11,6 +11,7 @@ if [ -f /opt/pre_startup.sh ]; then
     /opt/pre_startup.sh
 fi
 
+chown -R mysql:mysql /var/lib/mysql
 /bin/sh -c "/usr/bin/mysqld_safe > /dev/null 2>&1 &"
 
 sleep 15
