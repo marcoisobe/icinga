@@ -9,13 +9,15 @@ RUN apt-get update \
                                                autoconf mrtg cron python-openwsman software-properties-common language-pack-en-base rrdtool \
 # Apache, Perl & MySQL
  && apt-get install -y --no-install-recommends mysql-server apache2 mysql-client snmp-mibs-downloader freeipmi libipc-run-perl libswitch-perl \
-                                               libnumber-format-perl libconfig-inifiles-perl libdatetime-perl libcgi-pm-perl librrds-perl
+                                               libnumber-format-perl libconfig-inifiles-perl libdatetime-perl libcgi-pm-perl librrds-perl \
+ && apt-get clean
 
 # PHP PPA for PHP5.6
 RUN LC_ALL=en_US.UTF-8 add-apt-repository ppa:ondrej/php \
  && apt-get update \
  && apt-get install -y --no-install-recommends php5.6 php5.6-cli php5.6-mysql php5.6-ssh2 php5.6-curl php5.6-xml php5.6-xsl php5.6-gd \
  && phpenmod -s ALL mysql ssh2 curl xml xsl gd \
+ && apt-get clean
 
 RUN mkdir -p /var/www/mrtg \
  && mkdir -p /var/run/mysqld && chown mysql:mysql /var/run/mysqld \
@@ -24,6 +26,7 @@ RUN mkdir -p /var/www/mrtg \
  && sleep 15 \
  && apt-get install -y --no-install-recommends icinga icinga-idoutils icinga-doc nagios-plugins nagios-images nagios-snmp-plugins nagios-plugins-contrib snmp\
  && apt-get install -y --no-install-recommends icinga-web icinga-web-config-icinga icinga-web-pnp \
+ && apt-get clean
  && killall mysqld
 
 # Minor changes and install MIBs
@@ -44,8 +47,7 @@ RUN chmod g+xs /var/lib/icinga/rw \
  && sed -i -e '/^mibs :$/i mibdirs +/usr/share/snmp/mibs/PC6200\nmibdirs +/var/lib/mibs/cisco' /etc/snmp/snmp.conf \
  && sed -i -e '/^process_performance_data=/ s/0/1/' /etc/icinga/icinga.cfg \
  && sed -i -e '/^#host_perfdata_command=/ {s/#//; s/=.*/=process-host-perfdata/}' /etc/icinga/icinga.cfg \
- && sed -i -e '/^#service_perfdata_command=/ {s/#//; s/=.*/=process-service-perfdata/}' /etc/icinga/icinga.cfg \
- && apt-get clean
+ && sed -i -e '/^#service_perfdata_command=/ {s/#//; s/=.*/=process-service-perfdata/}' /etc/icinga/icinga.cfg
 
 # Setup idoutils and icinga-web
 RUN htpasswd -bc /etc/icinga/htpasswd.users root password \
