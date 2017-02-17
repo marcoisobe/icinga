@@ -36,6 +36,7 @@ apache2ctl start
 /bin/sh -c "/usr/sbin/ido2db -c /etc/icinga/ido2db.cfg"
 
 /usr/sbin/icinga -d /etc/icinga/icinga.cfg
+sleep 5
 
 if [ -f /opt/post_startup.sh ]; then
     chmod u+x /opt/post_startup.sh
