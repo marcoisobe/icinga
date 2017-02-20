@@ -26,8 +26,8 @@ RUN mkdir -p /var/www/mrtg \
  && sleep 15 \
  && apt-get install -y --no-install-recommends icinga icinga-idoutils icinga-doc nagios-plugins nagios-images nagios-snmp-plugins nagios-plugins-contrib snmp\
  && apt-get install -y --no-install-recommends icinga-web icinga-web-config-icinga icinga-web-pnp \
- && apt-get clean
- && killall mysqld
+ && apt-get clean \
+ && /usr/bin/mysqladmin shutdown
 
 # Minor changes and install MIBs
 RUN chmod g+xs /var/lib/icinga/rw \
@@ -118,7 +118,7 @@ RUN /bin/sh -c "cd /usr ; /usr/bin/mysqld_safe > /dev/null 2>&1 &" \
          pidfile='/var/run/icinga/icinga.pid', \
          conffile='/etc/icinga/icinga.cfg', \
          last_modified=NOW() WHERE id=1;" \
- && killall mysqld \
+ && /usr/bin/mysqladmin shutdown \
  && mkdir -p /etc/nagiosql/objects /etc/nagiosql/backup \
  && chown -R www-data:www-data /etc/nagiosql \
  && chmod -R g+rs /etc/nagiosql \
@@ -160,7 +160,7 @@ RUN curl -kL https://downloads.sourceforge.net/project/pnp4nagios/PNP-0.6/pnp4na
  && cd ../.. && rm -rf tmp/pnp4nagios-0.6.25 \
  && sed -i -e '/AuthName/ s/".*"/"Icinga Access"/' /etc/apache2/conf-available/pnp4nagios.conf \
  && sed -i -e '/AuthUserFile/ s/\/.*/\/etc\/icinga\/htpasswd.users/' /etc/apache2/conf-available/pnp4nagios.conf \
- && rm -f /usr/share/pnp4nagios/html/install.php \
+ && touch /usr/share/pnp4nagios/html/install.ignore \
  && a2enconf pnp4nagios
 
 ADD startup.sh /usr/sbin/startup.sh
