@@ -160,6 +160,7 @@ RUN curl -kL https://downloads.sourceforge.net/project/pnp4nagios/PNP-0.6/pnp4na
  && cd ../.. && rm -rf tmp/pnp4nagios-0.6.25 \
  && sed -i -e '/AuthName/ s/".*"/"Icinga Access"/' /etc/apache2/conf-available/pnp4nagios.conf \
  && sed -i -e '/AuthUserFile/ s/\/.*/\/etc\/icinga\/htpasswd.users/' /etc/apache2/conf-available/pnp4nagios.conf \
+ && sed -i -e 's/--lower=/--lower-limit=/' /usr/share/pnp4nagios/html/templates.dist/default.php \
  && touch /usr/share/pnp4nagios/html/install.ignore \
  && a2enconf pnp4nagios
 

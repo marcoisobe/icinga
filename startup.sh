@@ -51,6 +51,8 @@ echo "Starting icinga"
 /usr/sbin/icinga -d /etc/icinga/icinga.cfg
 sleep 5
 
+chown -R nagios:nagios /var/lib/pnp4nagios/perfdata
+
 if [ -f /opt/post_startup.sh ]; then
     chmod u+x /opt/post_startup.sh
     echo "Found post_startup.sh, executing it"
