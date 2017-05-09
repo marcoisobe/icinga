@@ -29,13 +29,17 @@ RUN mkdir -p /var/www/mrtg \
  && apt-get clean \
  && /usr/bin/mysqladmin shutdown
 
+# Add DELL iDRAC MIBs
+COPY dell.conf /etc/snmp-mibs-downloader
+COPY delllist /etc/snmp-mibs-downloader
+
 # Minor changes and install MIBs
 RUN chmod g+xs /var/lib/icinga/rw \
  && chmod u+s /usr/lib/nagios/plugins/check_dhcp \
  && cp /usr/share/doc/snmp-mibs-downloader/examples/cisco* /etc/snmp-mibs-downloader/ \
  && cd /etc/snmp-mibs-downloader && gzip -d ciscolist.gz \
  && sed -i -e '/CISCO-802-TAP-MIB/d;/CISCO-IP-TAP-CAPABILITY/d;/CISCO-IP-TAP-MIB/d;/CISCO-SYS-INFO-LOG-MIB/d;/CISCO-TAP2-CAPABILITY/d;/CISCO-TAP2-MIB/d;/CISCO-TAP-MIB/d;/CISCO-USER-CONNECTION-TAP-MIB/d;/CISCO-IP-CAPABILITY/d' /etc/snmp-mibs-downloader/ciscolist \
- && sed -i -e '/^AUTOLOAD=.*/ s/iana"/iana cisco"/' /etc/snmp-mibs-downloader/snmp-mibs-downloader.conf \
+ && sed -i -e '/^AUTOLOAD=.*/ s/iana"/iana cisco dell"/' /etc/snmp-mibs-downloader/snmp-mibs-downloader.conf \
  && echo "ARCHDIR=auto/mibs/v2" >> /etc/snmp-mibs-downloader/cisco.conf \
  && download-mibs \
  && curl -kL https://downloads.dell.com/FOLDER03857069M/1/PC6200v3.3.15.1a40.zip -o tmp.zip \
