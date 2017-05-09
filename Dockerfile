@@ -48,7 +48,7 @@ RUN chmod g+xs /var/lib/icinga/rw \
  && mkdir -p /usr/share/snmp/mibs/PC6200 \
  && unzip -d /usr/share/snmp/mibs/PC6200/ `ls *MIBs.zip` \
  && rm -f *MIBs.zip \
- && sed -i -e '/^mibs :$/i mibdirs +/usr/share/snmp/mibs/PC6200\nmibdirs +/var/lib/mibs/cisco' /etc/snmp/snmp.conf \
+ && sed -i -e '/^mibs :$/i mibdirs +/usr/share/snmp/mibs/PC6200\nmibdirs +/var/lib/mibs/cisco\nmibdirs +/var/lib/mibs/dell' /etc/snmp/snmp.conf \
  && sed -i -e '/^process_performance_data=/ s/0/1/' /etc/icinga/icinga.cfg \
  && sed -i -e '/^#host_perfdata_command=/ {s/#//; s/=.*/=process-host-perfdata/}' /etc/icinga/icinga.cfg \
  && sed -i -e '/^#service_perfdata_command=/ {s/#//; s/=.*/=process-service-perfdata/}' /etc/icinga/icinga.cfg
